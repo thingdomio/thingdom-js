@@ -93,122 +93,123 @@
             return kvps.join('&');
         };
         $_$.ajax = function (o) {
-        var xhr = $_$.xhr(),
-            n   = 0,
-            timer;
-        o = _extend({ userAgent: "XMLHttpRequest", lang: "en", type: "GET", data: null, dataType: "application/x-www-form-urlencoded" }, o);
-        if (o.timeout) {
-            timer = setTimeout(function () {
-                        xhr.abort();
-                        if (o.timeoutFn) {
-                            o.timeoutFn(o.url);
-                        }
-                    }, o.timeout);
-            }
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-                if (timer) {
-                    clearTimeout(timer);
+            var xhr = $_$.xhr(),
+                n   = 0,
+                timer;
+            o = _extend({ userAgent: "XMLHttpRequest", lang: "en", type: "GET", data: null, dataType: "application/x-www-form-urlencoded" }, o);
+            if (o.timeout) {
+                timer = setTimeout(function () {
+                            xhr.abort();
+                            if (o.timeoutFn) {
+                                o.timeoutFn(o.url);
+                            }
+                        }, o.timeout);
                 }
-                if (xhr.status < 300) {
-                    if (o.success) {
-                        o.success($_$._xhrResp(xhr));
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (timer) {
+                        clearTimeout(timer);
                     }
-                } else if (o.error) {
-                    o.error(xhr, xhr.status, xhr.statusText);
+                    if (xhr.status < 300) {
+                        if (o.success) {
+                            o.success($_$._xhrResp(xhr));
+                        }
+                    } else if (o.error) {
+                        o.error(xhr, xhr.status, xhr.statusText);
+                    }
+                    if (o.complete) {
+                        o.complete(xhr, xhr.statusText);
+                    }
+                } else if (o.progress) {
+                    o.progress(++n);
                 }
-                if (o.complete) {
-                    o.complete(xhr, xhr.statusText);
+            };
+            var url  = o.url,
+                data = null;
+            var isPost = o.type === "POST" || o.type === "PUT";
+            if (!isPost && o.data) {
+                url += "?" + $_$._formData(o.data);
+            }
+
+            xhr.open(o.type, url);
+
+            if (isPost) {
+                var isJson = o.dataType.indexOf("json") >= 0;
+                data   = isJson ? JSON.stringify(o.data) : $_$._formData(o.data);
+                xhr.setRequestHeader("Content-Type", isJson ? "application/json" : "application/x-www-form-urlencoded");
+            }
+            xhr.send(data);
+        };
+    })(root);
+
+    var ThingdomIO = root.Thingdom = function() {
+
+        var self     = this,
+            endpoint = 'https://api.thingdom.io/1.1/';
+
+        var post = function(command, data) {
+                    root.ajax({
+                        url: endpoint+command,
+                        withCredentials: true,
+                        type: 'POST',
+                        dataType: "json",
+                        data: data,
+                        success: function() {},
+                        error: function() {}
+                    });
+        };
+
+        var getAPISecret = function(){
+            var apiSecret = '',
+                scripts   = document.getElementsByTagName("script"),
+                src       = '',
+                uri       = null;
+
+        // parseUri 1.2.2
+        // (c) Steven Levithan <stevenlevithan.com>
+        // MIT License
+
+        var parseUri = function(str) {
+            var o   = parseUri.options,
+                m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
+                uri = {},
+                i   = 14;
+
+            while (i--) {
+                uri[o.key[i]] = m[i] || "";
+            }
+
+            uri[o.q.name] = {};
+            uri[o.key[12]].replace(o.q.parser, function ($0, $1, $2) {
+                if ($1) {
+                    uri[o.q.name][$1] = $2;
                 }
-            } else if (o.progress) {
-                o.progress(++n);
+            });
+            return uri;
+        };
+
+        parseUri.options = {
+            strictMode: false,
+            key: ["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],
+            q:   {
+                name:   "queryKey",
+                parser: /(?:^|&)([^&=]*)=?([^&]*)/g
+            },
+            parser: {
+                strict: /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,
+                loose:  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/
             }
         };
-        var url  = o.url,
-            data = null;
-        var isPost = o.type === "POST" || o.type === "PUT";
-        if (!isPost && o.data) {
-            url += "?" + $_$._formData(o.data);
-        }
 
-        xhr.open(o.type, url);
+        parseUri.options.strictMode = true;
 
-        if (isPost) {
-            var isJson = o.dataType.indexOf("json") >= 0;
-                data   = isJson ? JSON.stringify(o.data) : $_$._formData(o.data);
-            xhr.setRequestHeader("Content-Type", isJson ? "application/json" : "application/x-www-form-urlencoded");
-        }
-        xhr.send(data);
-    };
-})(root);
-
-var ThingdomIO = root.Thingdom = function() {
-    var self     = this,
-        endpoint = 'https://api.thingdom.io/1.1/';
-
-    var post = function(command, data) {
-                root.ajax({
-                    url: endpoint+command,
-                    withCredentials: true,
-                    type: 'POST',
-                    dataType: "json",
-                    data: data,
-                    success: function() {},
-                    error: function() {}
-                });
-    };
-
-    var getAPISecret = function(){
-        var apiSecret = '',
-            scripts   = document.getElementsByTagName("script"),
-            src       = '',
-            uri       = null;
-
-            // parseUri 1.2.2
-            // (c) Steven Levithan <stevenlevithan.com>
-            // MIT License
-
-            var parseUri = function(str) {
-                var o   = parseUri.options,
-                    m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
-                    uri = {},
-                    i   = 14;
-
-                while (i--) {
-                    uri[o.key[i]] = m[i] || "";
-                }
-
-                uri[o.q.name] = {};
-                uri[o.key[12]].replace(o.q.parser, function ($0, $1, $2) {
-                    if ($1) {
-                        uri[o.q.name][$1] = $2;
-                    }
-                });
-                return uri;
-            };
-
-            parseUri.options = {
-                strictMode: false,
-                key: ["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],
-                q:   {
-                    name:   "queryKey",
-                    parser: /(?:^|&)([^&=]*)=?([^&]*)/g
-                },
-                parser: {
-                    strict: /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,
-                    loose:  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/
-                }
-            };
-
-            parseUri.options.strictMode = true;
-
-            for (var i = 0; i < scripts.length; ++i) {
-                src = scripts[0].getAttribute('src');
-                uri = parseUri(src);
+        for (var i = 0; i < scripts.length; ++i) {
+            src = scripts[0].getAttribute('src');
+            uri = parseUri(src);
             if (uri.file === "thingdom.js" || uri.file === "thingdom.min.js") {
                 try {
                     apiSecret = uri.queryKey.api_secret;
-                } catch(e){
+                } catch(e) {
                     // absorb error for now.
                 }
                 break;
@@ -224,14 +225,15 @@ var ThingdomIO = root.Thingdom = function() {
     self.noConflict = function() {
         root.previous_thingdom = previous_thingdom;
         return self;
+        };
     };
-};
 
-var Thingdom = (function() {
-    Thingdom = new ThingdomIO();
-    return Thingdom;
-})();
+    var Thingdom = (function() {
+        Thingdom = new ThingdomIO();
+        return Thingdom;
+    })();
 
-Thingdom.ThingdomIO = Thingdom;
-root.Thingdom       = Thingdom;
+    Thingdom.ThingdomIO = Thingdom;
+    root.Thingdom       = Thingdom;
+
 }).call(this);
