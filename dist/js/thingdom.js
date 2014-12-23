@@ -4,10 +4,6 @@
     var previous_thingdom = root.Thingdom;
 
     //@link https://gist.github.com/mythz/1334560
-    //Adds $.xhr and jQuery-like $.ajax methods to the prescribed namespace.
-    //Inspired from David Flanagans excellent cross-platform utils
-    //Includes underscore.js _.each and _.extend methods
-    //modified to behave like jQuery's $.ajax(), not complete.
     (function($_$) {
         var win   = window,
             xhrs  = [

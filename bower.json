@@ -3,15 +3,18 @@
   "version": "0.0.1",
   "homepage": "https://github.com/thingdomio/thingdom-js",
   "authors": [
-    "Andrew Welters <awelters@hugmehugyou.org>"
+    "Andrew Welters <awelters@hugmehugyou.org>",
+    "F. Stephen Kirschbaum <fskirschbaum@gmail.com>"
   ],
   "description": "A simple Thingdom wrapper written in JavaScript to make deploying Thingdom on the front end easier for developers.",
-  "main": "thingdom.js",
+  "main": "dist/js/thingdom.js",
   "keywords": [
     "thingdom",
     "native",
     "javascript",
-    "emca"
+    "emca",
+    "mobile enable",
+    "push notifications"
   ],
   "license": "MIT",
   "private": true,
