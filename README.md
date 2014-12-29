@@ -1,7 +1,7 @@
 Thingdom JavaScript Library
 ===========
 
-JavaScript library for v1.1 of the [Thingdom.io API](https://api.thingdom.io/1.1).
+JavaScript library for v1.1 of the [Thingdom.io API](https://thingdom.io/).
 
 ### What is Thingdom?
 
