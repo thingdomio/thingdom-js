@@ -1,3 +1,15 @@
+/**
+ * Thingdom API JavaScript Wrapper
+ *
+ * @author     Andrew Welters <andrew.welters@mts.com>
+ * @author     F. Stephen Kirschbaum <stephen.kirschbaum@mts.com>
+ * @copyright  2014-2015 MTS Systems
+ * @license    http://www.opensource.org/licenses/mit-license.html MIT License
+ * @version    1.1
+ * @link       https://github.com/thingdomio/thingdom-js
+ * @website    https://thingdom.io
+ */
+
 (function() {
     "use strict";
     var root              = this;
@@ -143,91 +155,116 @@
         var self     = this,
             endpoint = 'https://api.thingdom.io/1.1/';
 
-        var post = function(command, data) {
-                    root.ajax({
-                        url: endpoint+command,
-                        withCredentials: true,
-                        type: 'POST',
-                        dataType: "json",
-                        data: data,
-                        success: function() {},
-                        error: function() {}
-                    });
+        self.responses = [];
+
+        var post = function(command, data, callback) {
+            root.ajax({
+                url:             endpoint + command,
+                withCredentials: true,
+                type:            'POST',
+                dataType:        "json",
+                data:            data,
+                success:         function(data) { self.responses.push(data); if (typeof callback === 'function') { callback(data); } },
+                error:           function(data) { self.responses.push(data); if (typeof callback === 'function') { callback(data); } }
+            });
         };
 
-        var getAPISecret = function(){
+        var getAPISecret = function() {
             var apiSecret = '',
                 scripts   = document.getElementsByTagName("script"),
                 src       = '',
                 uri       = null;
 
-        // parseUri 1.2.2
-        // (c) Steven Levithan <stevenlevithan.com>
-        // MIT License
+            // parseUri 1.2.2
+            // (c) Steven Levithan <stevenlevithan.com>
+            // MIT License
 
-        var parseUri = function(str) {
-            var o   = parseUri.options,
-                m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
-                uri = {},
-                i   = 14;
+            var parseUri = function(str) {
+                var o   = parseUri.options,
+                    m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
+                    uri = {},
+                    i   = 14;
 
-            while (i--) {
-                uri[o.key[i]] = m[i] || "";
-            }
-
-            uri[o.q.name] = {};
-            uri[o.key[12]].replace(o.q.parser, function ($0, $1, $2) {
-                if ($1) {
-                    uri[o.q.name][$1] = $2;
+                while (i--) {
+                    uri[o.key[i]] = m[i] || "";
                 }
-            });
-            return uri;
+
+                uri[o.q.name] = {};
+                uri[o.key[12]].replace(o.q.parser, function ($0, $1, $2) {
+                    if ($1) {
+                        uri[o.q.name][$1] = $2;
+                    }
+                });
+                return uri;
+            };
+
+            parseUri.options = {
+                strictMode: false,
+                key: ["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],
+                q:   {
+                    name:   "queryKey",
+                    parser: /(?:^|&)([^&=]*)=?([^&]*)/g
+                },
+                parser: {
+                    strict: /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,
+                    loose:  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/
+                }
+            };
+
+            parseUri.options.strictMode = true;
+
+            for (var i = 0; i < scripts.length; ++i) {
+                src = scripts[0].getAttribute('src');
+                uri = parseUri(src);
+                if (uri.file === "thingdom.js" || uri.file === "thingdom.min.js") {
+                    try {
+                        apiSecret = uri.queryKey.api_secret;
+                    } catch(e) {
+                        // absorb error for now.
+                    }
+                    break;
+                }
+            }
+            return apiSecret;
         };
 
-        parseUri.options = {
-            strictMode: false,
-            key: ["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],
-            q:   {
-                name:   "queryKey",
-                parser: /(?:^|&)([^&=]*)=?([^&]*)/g
-            },
-            parser: {
-                strict: /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,
-                loose:  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/
+        var intitialize = function() {
+            var settings = {};
+
+            var initCallback = function( data ) {
+                if ( data.response === 'success' ) {
+                    for ( var key in data ) {
+                        self[ key ] = data[ key ];
+                    }
+                } else {
+                    console.log( data );
+                }
+            };
+
+            if ( typeof self.apiSecret === 'undefined' ) {
+                self.apiSecret = getAPISecret();
             }
+
+            if ( typeof self.device_secret !== 'undefined' ) {
+                settings = { 'api_secret': self.apiSecret, 'device_secret': self.device_secret };
+            } else {
+                settings = { 'api_secret': self.apiSecret };
+            }
+            post( 'token', settings, initCallback );
         };
 
-        parseUri.options.strictMode = true;
+        intitialize();
 
-        for (var i = 0; i < scripts.length; ++i) {
-            src = scripts[0].getAttribute('src');
-            uri = parseUri(src);
-            if (uri.file === "thingdom.js" || uri.file === "thingdom.min.js") {
-                try {
-                    apiSecret = uri.queryKey.api_secret;
-                } catch(e) {
-                    // absorb error for now.
-                }
-                break;
-            }
-        }
-        return apiSecret;
+        self.noConflict = function() {
+            root.previous_thingdom = previous_thingdom;
+            return self;
+        };
     };
 
-    self.apiSecret = getAPISecret();
-
-    post('token', {'api_secret' : self.apiSecret});
-
-    self.noConflict = function() {
-        root.previous_thingdom = previous_thingdom;
-        return self;
-        };
-    };
-
-    var Thingdom = (function() {
-        Thingdom = new ThingdomIO();
-        return Thingdom;
-    })();
+    function Thingdom() {
+      var Thingdom = new ThingdomIO();
+      return Thingdom;
+    }
 
     Thingdom.ThingdomIO = Thingdom;
     root.Thingdom       = Thingdom;
