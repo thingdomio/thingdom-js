@@ -10,11 +10,23 @@
  * @website    https://thingdom.io
  */
 
+
+/**
+ *  @returns  {new Thingdom()}  [Thingdom]
+ *  @todo  describe
+ *  @todo  update for AMD / Require?
+ */
+
 ( function () {
   "use strict";
   var root = this,
       previous_thingdom = root.Thingdom;
-  ( function ( $_$ ) { // @link https://github.com/ryansmith94/Pledges
+/**
+ *  provides Promise/A like functionality. modified from link
+ *  @link https://github.com/ryansmith94/Pledges
+ *  @returns  {deferred()}  [@todo adapt and integrate]
+ */
+  ( function ( $_$ ) {
     var Deferred = function () {
       var self = this, state = 0, value = null, fulfilled = [], rejected = [];
       var changeStateFn = function ( newState, buffer ) { return function ( givenValue ) { if ( state === 0 ) { value = givenValue;  state = newState;  buffer.forEach( function ( fn ) { fn(); } ); } return self; }; };
@@ -29,7 +41,12 @@
     // AMD Support.
     if ( typeof $_$.define === 'function' ) { $_$.define('deferred', [], function () { return constructor; } ); } else { $_$.deferred = constructor; }
   }( root ));
-  ( function ( $_$ ) { // @link https://gist.github.com/mythz/1334560
+/**
+ *  provides jquery like $.ajax() functionality
+ *  @link https://gist.github.com/mythz/1334560
+ *  @returns {ajax()} [@todo adapt and integrate]
+ */
+  ( function ( $_$ ) {
     var xhrs = [ function () { return new XMLHttpRequest(); }, function () { return new ActiveXObject( "Microsoft.XMLHTTP" ); }, function () { return new ActiveXObject( "MSXML2.XMLHTTP.3.0" ); }, function () { return new ActiveXObject( "MSXML2.XMLHTTP" ); } ], _xhrf = null;
     var hasOwnProperty = Object.prototype.hasOwnProperty, nativeForEach = Array.prototype.forEach;
     var _each = function ( o, fn, ctx ) { if ( o === null ) { return; } if (nativeForEach && o.forEach === nativeForEach) { o.forEach(fn, ctx); } else if ( o.length === +o.length ) { for ( var i = 0, l = o.length; i < l; i++ ) { if ( i in o && fn.call( ctx, o[i], i, o ) === breaker ) return; } } else { for ( var key in o ) { if ( hasOwnProperty.call( o, key )) { if ( fn.call( ctx, o[key], key, o ) === breaker ) { return; } } } } };
@@ -40,6 +57,12 @@
     $_$.ajax = function ( o ) { var xhr = $_$.xhr(), timer, n = 0, deferred = root.deferred(); o = _extend( { userAgent: "XMLHttpRequest", lang: "en", type: "GET", data: null, dataType: "application/x-www-form-urlencoded" }, o ); if (o.timeout) { timer = setTimeout( function () { xhr.abort(); if ( o.timeoutFn ) { o.timeoutFn( o.url ); } }, o.timeout );} var onComplete = function( data ) { return o.success( data ); }; var onError = function( data ) { return o.error( data ); }; deferred.then( onComplete, onError ); xhr.onreadystatechange = function () { if ( xhr.readyState == 4 ) { if ( timer ) { clearTimeout( timer ); } if ( xhr.status < 300 ) { if ( o.dataType.indexOf( "json" ) >= 0 ) { xhr.responseJSON = JSON.parse( xhr.responseText ); } if ( o.success ) { if ( deferred.state() === 'pending' ) { deferred.resolve( $_$._xhrResp( xhr ) ); } else { o.success( $_$._xhrResp( xhr ), "success", xhr ); } } } else if ( o.error ) { if ( deferred.state() === 'pending' ) { deferred.reject( xhr.statusText ); } else { o.error( xhr, xhr.status, xhr.statusText ); } } if ( o.complete ) { o.complete( xhr, xhr.statusText ); } } else if ( o.progress ) { o.progress( ++n ); } }; var url = o.url, data = null; var isPost = o.type == "POST" || o.type == "PUT"; if ( !isPost && o.data ) { url += "?" + $_$._formData( o.data ); } xhr.open( o.type, url ); if ( isPost ) { var isJson = o.dataType.indexOf( "json" ) >= 0; data = isJson ? JSON.stringify( o.data ) : $_$._formData( o.data ); xhr.setRequestHeader( "Content-Type", isJson ? "application/json" : "application/x-www-form-urlencoded" ); } xhr.send( data ); };
   } ( root ));
 
+/**
+ *  creates a new Thingdom
+ *  @class creates a new ThingdomClass
+ *  @returns {ThingdomClass} [ThingdomClass]
+ */
+
   var ThingdomClass = root.Thingdom = function () {
     var $self     = this,
         $endpoint = 'https://api.thingdom.io/1.1/';
@@ -47,11 +70,23 @@
     $self.responses = [];
     $self.errors    = [];
 
+    /**
+     *  handles errors
+     *  @method  errorHandler
+     *  @param   {object}      e  error object passed from function
+     */
     var errorHandler = function( e ) {
       $self.errors.push( e );
       console.error( $self.errors[ $self.errors.length - 1 ] ); // @todo var self.dev === true ??
     };
 
+    /**
+     *  handles ajax posting
+     *  @method  post
+     *  @param   {string}    command   comand being sent to Thingdom API
+     *  @param   {object}    data      JSON formatted Object for PostBODY
+     *  @param   {function}  callback  function invoked after promise completes
+     */
     var post = function ( command, data, callback ) {
       root.ajax( {
         url:              $endpoint + command,
@@ -65,13 +100,24 @@
       } );
     };
 
+    /**
+     *  gets API secret from script call
+     *  @method  getAPISecret
+     *  @returns  {string}      apiSecret
+     */
     var getAPISecret = function () {
       var scripts = document.getElementsByTagName( "script" ),
           apiSecret,
           src,
           uri = null;
 
-      // @link http://blog.stevenlevithan.com/archives/parseuri
+      /**
+       *  parses URI modified from link
+       *  @link http://blog.stevenlevithan.com/archives/parseuri
+       *  @method   parseUri
+       *  @param    {string}  str  string to parse
+       *  @returns  {string}  str  string that was parsed
+       */
       var parseUri = function ( str ) { var o = parseUri.options, m = o.parser[ o.strictMode ? "strict" : "loose" ].exec( str ), uri = {}, i = 14; while ( i-- ) { uri[ o.key[ i ] ] = m[ i ] || ""; } uri[ o.q.name ] = {}; uri[ o.key[ 12 ] ].replace( o.q.parser, function ( $0, $1, $2 ) { if ( $1 ) { uri[ o.q.name ][ $1 ] = $2; } } ); return uri; };
       parseUri.options = {
         strictMode: true,
@@ -87,7 +133,7 @@
       for ( var i = 0; i < scripts.length; ++i ) {
         src = scripts[ 0 ].getAttribute( 'src' );
         uri = parseUri( src );
-        if ( uri.file === "thingdom.js" || uri.file === "thingdom.min.js" ) {
+        if ( uri.file === "thingdom.js" || uri.file === "thingdom-min.js" ) {
           try {
             apiSecret = uri.queryKey.api_secret;
           } catch ( e ) {
@@ -99,7 +145,12 @@
       return apiSecret;
     };
 
-    var intitialize = function () {
+    /**
+     *  initilizes self with Thingdom API using apiSecret
+     *  @method  intitialize
+     *  @private
+     */
+    var _intitialize = function () {
       var postData = {};
 
       if ( typeof $self.apiSecret === 'undefined' ) {
@@ -117,6 +168,12 @@
         };
       }
 
+      /**
+       *  sticks data in the places where it goes
+       *  @method   intitializeCallback
+       *  @param    {object}  data  JSON response from Thingdom API
+       *  @todo hide / protect values better
+       */
       var intitializeCallback = function ( data ) {
         if ( data.response === 'success' ) {
           for ( var key in data ) {
@@ -130,8 +187,15 @@
       post( 'token', postData, intitializeCallback );
     };
 
-    intitialize();
+    _intitialize();
 
+    /**
+     *  @class Thing
+     *  @extends {Thingdom} let's be real, no, it doesn't but it will soon as possible.
+     *  @param   {string}  thing_id    thing's id
+     *  @param   {string}  token       application_token
+     *  @param   {string}  thing_code  thing's code
+     */
     var Thing = function ( thing_id, token, thing_code ) {
       var $parent             = root.Thingdom,
           $_post              = post;
@@ -144,6 +208,17 @@
       this.feed_categories    = [];
       this.status_keys        = [];
 
+      /**
+       *  posts to settings/feed_category & settings/feed_category/delete for this Thing
+       *  @link   https://dev.thingdom.io/docs/api/1.1/settings/feed_category/
+       *  @method  feed_category
+       *  @param  {string}  action        action to take
+       *  @param  {string}  name          the internal name for the category.
+       *  @param  {string}  display_name  the display name for the category.
+       *  @param  {string}  product_type  set which product type this category applies to
+       *                                  @todo  should be @optional
+       *  @todo describe what's gonna happen.
+       */
       var feed_category = function( action, name, display_name, product_type ) {
         var actions = [ 'create', 'update', 'delete' ],
             cmd = 'settings/feed_category',
@@ -178,6 +253,14 @@
         $_post( cmd , postData, feed_categoryCallback );
       };
 
+      /**
+       *  posts to /feed for this Thing
+       *  @link    https://dev.thingdom.io/docs/api/1.1/feed/
+       *  @method  feed
+       *  @param   {string}  category  the category name for this feed message.
+       *  @param   {string}  message   whatever message you want.
+       *  @todo     describe what's gonna happen.
+       */
       var feed = function( category, message ) {
         var postData = {
               token:          this.application_token,
@@ -196,6 +279,17 @@
         $_post( 'feed', postData, feedCallback );
       };
 
+      /**
+       *  posts to settings/status_key & settings/status_key/delete for this Thing
+       *  @link   https://dev.thingdom.io/docs/api/1.1/settings/status_key/
+       *  @method status_key
+       *  @param  {string}  action  action to take
+       *  @param  {string}  name          the name for the key
+       *  @param  {string}  display_name  the display name for the key
+       *  @param  {string}  product_type  the name of the product type this key applies to
+       *  @param  {bool}    is_digital    define whether value for key digital
+       *                                  @todo  should be @optional
+       */
       var status_key = function( action, name, display_name, product_type, is_digital ) {
         var actions = [ 'create', 'update', 'delete' ],
             cmd = 'settings/status_key',
@@ -229,8 +323,17 @@
           };
         }
         $_post( cmd , postData, status_keyCallback );
-      }
+      };
 
+      /**
+       *  posts to status/ for this Thing with a single key / value pair
+       *  @link https://dev.thingdom.io/docs/api/1.1/status/
+       *  @method  status
+       *  @param   {string}  key    key to which you'd like to update status
+       *  @param   {string}  value  value for the key that you'd like to update
+       *  @param   {string}  unit   unit for value
+       *                            @todo should be @optional
+       */
       var status = function( key, value, unit ) {
         var postData = {
           token: this.application_token,
@@ -252,6 +355,12 @@
         $_post( 'status', postData, statusCallback );
       };
 
+      /**
+       *  posts to status/ for this Thing with an array of key value pairs
+       *  @link https://dev.thingdom.io/docs/api/1.1/status/
+       *  @method  status
+       *  @param   {string}  statusArr  array of key value pairs
+       */
       var statusArray = function( statusArr ) {
         var postData = {
           token: this.application_token,
@@ -277,6 +386,15 @@
 
     $self.things = ( typeof $self.things === 'undefined' ) ? things : $self.things;
 
+    /**
+     *  posts to thing/ then attaches new Thing() to Thingdom.things[] at the end.
+     *  @link  https://dev.thingdom.io/docs/api/1.1/thing/
+     *  @method  getThing
+     *  @param   {string}  name          name of the thing
+     *  @param   {string}  product_type  the product type for this new thing
+     *                                   @todo  should be @optional
+     *  @todo  allow invoke of existing thing with control passed to new Thing?
+     */
     var getThing = function ( name, product_type ) {
       var getThingPromise = new deferred();
 
@@ -303,6 +421,13 @@
 
       postData.token = $self.application_token;
 
+      /**
+       *  callback to attach new Thing to end of $self.things array and return postion
+       *  @method   onThingGot
+       *  @param    {Thing}    data  new Thing object
+       *  @returns  {integer}    array pointer
+       *  @todo     the scope of this means the return never happens. fix that.
+       */
       var onThingGot = function( data ) {
         var pointer = $self.things.push( new Thing( data._xhr.thing_id, data.$parent.application_token, data._xhr.code ) );
         return $self.things[ pointer - 1 ];
@@ -314,6 +439,13 @@
 
       getThingPromise.then( onThingGot, onThingError );
 
+      /**
+       *  callback to handle resolution of Promise for server response when creating a thing.
+       *  @rationale quiet & performant async without blocking single threaded.
+       *  @todo      better solution? i'm open to suggestions. scope scope scope scope scope compatibility????
+       *  @method  getThingCallback
+       *  @param   {callbackXHR}  data  JSON from AJAX response
+       */
       var getThingCallback = function ( data ) {
         var resolve = { _xhr: data, $parent: $self };
         if ( resolve._xhr.response === 'success' ) {
@@ -327,11 +459,20 @@
 
     $self.getThing = getThing;
 
+    /**
+     *  noConflict
+     *  @method  noConflict
+     *  @returns  {Thingom}    The best darn Thingdom ever!
+     */
     $self.noConflict = function () {
       root.previous_thingdom = previous_thingdom;
       return $self;
     };
   };
+  /**
+   *  self invokation
+   *  @returns  {Thingdom}  the Thingdoms!!!
+   */
 
   (function() {
     var Thingdom = new ThingdomClass();
@@ -342,3 +483,5 @@
   root.Thingdom = Thingdom;
 
 } ).call( this );
+
+
