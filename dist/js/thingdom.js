@@ -39,7 +39,6 @@
         $apiSecret,
         $application_token;
 
-    this.responses = [];
     this.lastError = null;
 
     if ( typeof api_secret !== 'undefined' ) {
@@ -54,6 +53,7 @@
      */
     var errorHandler = function( e ) {
       $self.lastError = e;
+      return;
     };
 
     /**
@@ -77,7 +77,7 @@
           data:             rData,
           success:  function(){},
           error:    function(){},
-          complete: function( xhr ) { $self.responses.push( xhr.responseJSON ); if ( xhr.responseJSON.response !== 'token_expired' ) { rCallback( xhr.responseJSON ); } else { errorHandler( 'Your application_token has expired and could not be renewed.' ); } }
+          complete: function( xhr ) { if ( xhr.responseJSON.response !== 'token_expired' ) { rCallback( xhr.responseJSON ); } else { errorHandler( 'Unable to post. Thingdom API response: ' + xhr.responseJSON.msg ); return; } }
         } );
       };
 
@@ -89,7 +89,7 @@
         data:             data,
         success:  function( data ) { if ( data.response !== 'token_expired' ) { callback( data ); } },
         error:    function( data ) { callback( data ); },
-        complete: function( xhr ) { $self.responses.push( xhr.responseJSON ); if ( xhr.responseJSON.response === 'token_expired' ) { getApplicationToken( $apiSecret, $device_secret, rePost ); } }
+        complete: function( xhr ) { if ( xhr.responseJSON.response === 'token_expired' ) { getApplicationToken( $apiSecret, $device_secret, rePost ); } }
       } );
     };
 
@@ -139,7 +139,8 @@
         var postData = {};
 
         if ( typeof message === 'undefined' ) {
-          errorHandler( 'Error in feed. You must define a message as a string' );
+          errorHandler( 'feed: You must provide a message' );
+          return;
         }
         if ( typeof category !== 'undefined' ) {
           postData.feed_category = category;
@@ -149,8 +150,9 @@
         postData.message  = message;
 
         var feedCallback  = function( data ) {
-          if ( data.msg !== 'success' ) {
-            errorHandler( 'Error posting to /feed. Server responded: ' + data.msg );
+          if ( data.response !== 'success' ) {
+            errorHandler( 'feed: Error posting to /feed. Thingdom API response: ' + data.msg );
+            return;
           }
         };
         post( 'feed', postData, feedCallback );
@@ -170,11 +172,12 @@
         var postData = {};
 
         if ( typeof key === 'undefined' || typeof value === 'undefined' ) {
-          this.errors.push( 'You must specify both a key and value to post to /status' );
+          errorHandler( 'status: You must specify both a key and value' );
+          return;
         }
 
-        postData.token        = $application_token;
-        postData.thing_id     = $thing_id;
+        postData.token     = $application_token;
+        postData.thing_id  = $thing_id;
 
         if ( typeof unit !== 'undefined' ) {
           postData.status_array = [ { name: key, value: value, unit: unit } ];
@@ -183,8 +186,8 @@
         }
 
         var statusCallback = function ( data ) {
-          if ( data.msg !== 'success' ) {
-            errorHandler( 'Error posting to /status. Server responded: ' + data.msg );
+          if ( data.response !== 'success' ) {
+            errorHandler( 'status: Error posting to /status. Thingdom API response: ' + data.msg );
           }
         };
         post( 'status', postData, statusCallback );
@@ -199,7 +202,7 @@
       var statusArray = function( statusArr ) {
 
         if ( typeof statusArr !== 'object' ) {
-          errorHandler( 'Error in statusArray. You must pass an array / object with appropriate key value pairs like [ { name: key, value: val, unit: unit } ]' );
+          errorHandler( 'statusArray: You must pass an array containing one or more objects with appropriate key value pairs: [ { name: key, value: val, unit: unit } ]' );
         }
 
         var postData = {
@@ -208,8 +211,8 @@
           status_array: statusArr
         };
         var statusCallback = function ( data ) {
-         if ( data.msg !== 'success' ) {
-            errorHandler( 'Error posting to /status. Server responded: ' + data.msg );
+         if ( data.response !== 'success' ) {
+            errorHandler( 'statusArray: Error posting to /status. Thingdom API response: ' + data.msg );
           }
         };
         post( 'status', postData, statusCallback );
@@ -222,7 +225,7 @@
     };
 
     /**
-     *  posts to thing/ then performs passed callback.
+     *  posts to /thing then performs passed user callback in proper scope ( theoretically ).
      *  @link  https://dev.thingdom.io/docs/api/1.1/thing/
      *  @method  getThing
      *  @param   {string}  name          name of the thing
@@ -233,18 +236,22 @@
     this.getThing = function ( name, product_type, callback ) {
 
       if ( typeof $device_secret === 'undefined' || typeof $apiSecret === 'undefined' || typeof $application_token === 'undefined' ) {
-        errorHandler( "Unable to get Thing, Thingdom requires an API Secret, an Application Token, and a Device Secret." );
+        errorHandler( "getThing: Thingdom requires a valid API Secret. Log in at dev.thingdom.io for yours." );
         return;
       }
 
-      var postData = {};
-
-      if ( typeof name !== 'undefined' ) {
-        postData.name = name;
-      } else {
-        errorHandler( "Unable to get Thing. You must define the name for your Thing" );
+      if ( typeof callback !== 'function' ) {
+        errorHandler( "getThing: You must provide a valid callback to get instantiated Thing. Try a good variation of: function( newThing ) { thing = newThing; } ");
         return;
       }
+
+
+      if ( typeof name === 'undefined' ) {
+        errorHandler( "getThing: You must define the name for your Thing" );
+        return;
+      }
+
+      var postData = { name: name };
 
       if ( typeof product_type !== 'undefined' ) {
         postData.product_type = product_type;
@@ -253,13 +260,11 @@
       postData.token = $application_token;
 
       var getThingCallback = function ( data ) {
-        var thing;
-        if ( data.response === 'success' ) {
-          thing = new ThingIO( data.thing_id, data.code );
-        } else {
-          errorHandler( 'Unable to get thing, server response: ' + data.msg );
+        if ( data.response !== 'success' ) {
+          errorHandler( 'getThing: Error posting to /thing. Error from Thingdom API: ' + data.msg );
+          return;
         }
-        callback( thing );
+        callback( new ThingIO( data.thing_id, data.code ) );
       };
       post( 'thing', postData, getThingCallback );
     };
