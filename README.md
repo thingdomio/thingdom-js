@@ -52,17 +52,21 @@ var thing; thingdom.getThing( "thingdom.io formdata", "", function( newThing ) {
 #### Send a feed message 
 ( this also triggers push notifications in Thingdom ):
 ```javascript
-thing.feed( "new_submission", JSON.stringify( formData ) );
+thing.feed( JSON.stringify( feedData, ' ', 2), "new_submission" );
 ```
 Here you could imagine posting a feed of comments to your site, or perhaps you and your team can be alerted with the name, email, and extension of the person requesting help on your company's internal Help Desk site. Share the code for your thing from within Thingdom, or perhaps require permission to view your Thing. 
 
 #### Update your Thing's status:
 ```javascript
-thing.status( "mostRecentFormCompleted", token_vale );
+thing.status( "mostRecentFormCompleted", token_value );
+```
+or
+```javascript
+thing.statuArray( arrayOfKeyValuePairs );
 ```
 You can see your Thing's status in real-time. Here you you could pass some kind value to compare to your feed, or associated database, or your most recent user's high score.
 
 ### TODO
 ***Coming Soon:*** Examples for Usage! How exciting!
 
-***Coming Soom:*** Explanation for usage with ```bower install thingdom-js```
+***Coming Soon:*** Explanation for usage with ```bower install thingdom-js```
