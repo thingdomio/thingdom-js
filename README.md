@@ -46,19 +46,19 @@ var thingdom = new Thingdom( 'EnterYourAPISecretHere' );
 
 #### Get your Thing:
 ```javascript
-var thing; thingdom.getThing( "thingdom.io formdata", "", function( newThing ) { thing = newThing } );
+var thing; thingdom.getThing("Example Thing", "javascript_example", function( newThing ) { thing = newThing } );
 ```
 
 #### Send a feed message 
 ( this also triggers push notifications in Thingdom ):
 ```javascript
-thing.feed( JSON.stringify( feedData, ' ', 2), "new_submission" );
+thing.feed( "New Feed Message Triggered From My Code, "js_web_feed" );
 ```
 Here you could imagine posting a feed of comments to your site, or perhaps you and your team can be alerted with the name, email, and extension of the person requesting help on your company's internal Help Desk site. Share the code for your thing from within Thingdom, or perhaps require permission to view your Thing. 
 
 #### Update your Thing's status:
 ```javascript
-thing.status( "mostRecentFormCompleted", token_value );
+thing.status( "js_web_activity", "online" );
 ```
 or
 ```javascript
