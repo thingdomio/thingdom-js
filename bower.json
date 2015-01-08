@@ -22,7 +22,7 @@
   "ignore": [
     "**/.*",
     "**/*.map",
-    "src/"
+    "src/",
     "thingdom.js",
     "node_modules",
     "bower_components",
