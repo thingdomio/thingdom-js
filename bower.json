@@ -1,15 +1,17 @@
 {
   "name": "thingdom-js",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "homepage": "https://github.com/thingdomio/thingdom-js",
   "authors": [
     "Andrew Welters <awelters@hugmehugyou.org>",
     "F. Stephen Kirschbaum <fskirschbaum@gmail.com>"
   ],
   "description": "A simple Thingdom wrapper written in JavaScript to make deploying Thingdom on the front end easier for developers.",
-  "main": "dist/js/thingdom.js",
+  "main": "dist/js/min/thingdom-min.js",
   "keywords": [
     "thingdom",
+    "thingdom-js",
+    "things",
     "native",
     "javascript",
     "emca",
@@ -17,12 +19,15 @@
     "push notifications"
   ],
   "license": "MIT",
-  "private": true,
   "ignore": [
     "**/.*",
+    "**/*.map",
+    "src/",
+    "thingdom.js",
     "node_modules",
     "bower_components",
     "test",
     "tests"
-  ]
+  ],
+  "private": false
 }
