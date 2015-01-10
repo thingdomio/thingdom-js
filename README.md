@@ -27,6 +27,16 @@ JavaScript library for v1.1 of the [Thingdom.io API](https://thingdom.io/).
 3. Track button clicks
 4. ... what other things would you like to receive alerts for and get status updates on for your website/web app?!
 
+### Installation
+
+Currently you can include Thingdom in your code adding thingdom-min.js to your current project through standard script tag.
+
+You can also install through bower with
+
+```
+bower install thingdom-js --save
+```
+
 ### Usage
 
 __STOP__ You must have a ( free ) Developer API Secret to be able to use this in your own project! __STOP__
@@ -46,19 +56,19 @@ var thingdom = new Thingdom( 'EnterYourAPISecretHere' );
 
 #### Get your Thing:
 ```javascript
-var thing; thingdom.getThing("Example Thing", "javascript_example", function( newThing ) { thing = newThing } );
+var thing; thingdom.getThing( "Example Thing", "javascript_example", function( newThing ) { thing = newThing } );
 ```
 
 #### Send a feed message 
 ( this also triggers push notifications in Thingdom ):
 ```javascript
-thing.feed( "New Feed Message Triggered From My Code, "js_web_feed" );
+thing.feed( "New Feed Message Triggered From My Code", "js_web_feed" );
 ```
 Here you could imagine posting a feed of comments to your site, or perhaps you and your team can be alerted with the name, email, and extension of the person requesting help on your company's internal Help Desk site. Share the code for your thing from within Thingdom, or perhaps require permission to view your Thing. 
 
 #### Update your Thing's status:
 ```javascript
-thing.status( "js_web_activity", "online" );
+thing.status( "js_web_status", "online" );
 ```
 or
 ```javascript
@@ -66,7 +76,11 @@ thing.statuArray( arrayOfKeyValuePairs );
 ```
 You can see your Thing's status in real-time. Here you you could pass some kind value to compare to your feed, or associated database, or your most recent user's high score.
 
-### TODO
+### Example:
+
+You can now view a basic [semi-functional demo](http://codepen.io/fskirschbaum/details/jEyzbd) on CodePen.
+
+### TODO:
 ***Coming Soon:*** Examples for Usage! How exciting!
 
 ***Coming Soon:*** Explanation for usage with ```bower install thingdom-js```
