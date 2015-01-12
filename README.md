@@ -44,9 +44,7 @@ bower install thingdom-js --save
 
 ### Demo:
 
-Example:
-
-You can now view a basic [functional demo](http://codepen.io/fskirschbaum/details/jEyzbd) on CodePen.io.
+You can try Thingdom using this [simple demo](http://codepen.io/fskirschbaum/details/jEyzbd) on CodePen.io.
 
 ### Usage
 
