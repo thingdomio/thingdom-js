@@ -5,7 +5,7 @@
  * @author     F. Stephen Kirschbaum <stephen.kirschbaum@mts.com>
  * @copyright  2014-2015 MTS Systems
  * @license    http://www.opensource.org/licenses/mit-license.html MIT License
- * @version    1.1
+ * @version    0.1.2
  * @link       https://github.com/thingdomio/thingdom-js
  * @website    https://thingdom.io
  */
