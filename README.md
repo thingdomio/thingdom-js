@@ -16,13 +16,10 @@ Read enough? [Get Started Now!](https://thingdom.io/sign-up)
 * See real-time status information you can define
 * Customize a view for your Thing with the [Thingdom Developer Portal](https://dev.thingdom.io/) (Once you've signed up for free), and allow your users to subscribe to your Thing(S) with our Thingdom [iOS](https://itunes.apple.com/us/app/thingdom/id807761969?mt=8) and / or [Android](https://play.google.com/store/apps/details?id=com.thingdom.mobile) apps.
 * You can use Thingdom in whatever ways you can imagine!
+*
 
-<p align="left">
-
-<img src="http://thingdom.io/images/push_notification.png?raw=true" alt="Alert"/>
-
-<img src="http://thingdom.io/images/profile.png?raw=true" alt="Status Update"/>
-
+<p>
+<img src="http://thingdom.io/images/profile.png" alt="Status Update" />
 </p>
 
 ### Ideas for Library Usage
