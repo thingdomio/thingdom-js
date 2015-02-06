@@ -18,10 +18,6 @@ Read enough? [Get Started Now!](https://thingdom.io/sign-up)
 * You can use Thingdom in whatever ways you can imagine!
 *
 
-<p>
-<img src="http://thingdom.io/images/profile.png" alt="Status Update" />
-</p>
-
 ### Ideas for Library Usage
 
 1. Receive push notifications (alerts) with every user form submission
